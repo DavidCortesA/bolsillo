@@ -39,6 +39,7 @@ export function PayCheck({ ev }: { ev: any }) {
       checked={!!ev.paid}
       onCheckedChange={(v) => setMark(ev.key, v === true)}
       aria-label={ev.paid ? `Marcar ${ev.name} como pendiente` : `Marcar ${ev.name} como pagado`}
+      title={ev.auto ? (ev.paid ? 'Cargo automático: se dio por pagado al pasar la fecha. Desmárcalo si falló.' : 'Cargo automático: se dará por pagado al pasar la fecha.') : undefined}
       className="size-5 rounded-md border-[1.5px] data-[state=checked]:border-good data-[state=checked]:bg-good data-[state=checked]:text-white"
       onClick={(e) => e.stopPropagation()}
     />

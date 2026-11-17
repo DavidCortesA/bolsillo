@@ -1,4 +1,5 @@
-import { AlertTriangle, ArrowUpRight, CalendarDays, Check, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CalendarDays, Check, Pencil, Plus, Repeat, Search, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -112,7 +113,14 @@ export default function Pagos() {
                   <TableRow key={p.id} className={cn('cursor-pointer', !st.next && 'text-muted-foreground')} onClick={() => openForm('pago', { id: p.id })}>
                     <TableCell>
                       <div className="mb-1 font-medium">{p.name}</div>
-                      <CatBadge cat={p.cat} />
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <CatBadge cat={p.cat} />
+                        {p.auto_pay && (
+                          <Badge variant="outline" className="rounded-md font-mono text-[11px] font-medium uppercase tracking-wide text-ink-2" title="Cargo automático: se da por pagado al pasar la fecha">
+                            <Repeat />Auto
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">{freqText(p)}</TableCell>
                     <TableCell className="text-right whitespace-nowrap tabular-nums">{money(p.amount)}</TableCell>

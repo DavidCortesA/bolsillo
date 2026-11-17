@@ -10,6 +10,7 @@ Finanzas personales para llevar al día tus pagos y tus ingresos: Kueski quincen
 - **Pagos**: tabla de deudas con progreso (por ejemplo `2/4`), lo que falta por pagar y la próxima fecha. Al agregar una nueva se acomoda sola en la tabla, el calendario y la gráfica.
 - **Ingresos**: fijos (quincenal o mensual) y variables (extras o por cierto tiempo).
 - **Frecuencias**: quincenal (15 y fin de mes, 1 y 16, 5 y 20, 10 y 25), cada 14 días, mensual, anual o una sola vez; con número de pagos (colegiatura a 4 meses) o fecha de fin.
+- **Cargo automático**: marca un pago como "se cobra solo" (Netflix, Spotify, tarjetas domiciliadas) y la app lo da por pagado en cuanto pasa su fecha, sin que lo marques a mano. Se sugiere para streaming. Si un cargo falla, lo desmarcas y esa marca manual siempre gana. El mismo día del cargo sigue pendiente. En la tabla de Pagos aparece con la etiqueta *Auto*.
 - **Días hábiles**: si una fecha cae en sábado, domingo o festivo, se recorre al día hábil anterior (ver abajo).
 - **Recordatorios en tu calendario**: en Ajustes descargas un `.ics` con tus próximos pagos (y opcionalmente ingresos) como eventos con aviso el mismo día, 1 o 3 días antes y a la hora que elijas. Se abre en Apple Calendar o Google Calendar; es una foto de hoy, así que se vuelve a descargar cuando cambies algo.
 - **Tandas**: pagas cada quincena y registras tu turno de cobro como ingreso.
@@ -57,6 +58,7 @@ Otros comandos: `npm run typecheck`, `npm run build`, `npm run preview`, `npm ru
    - `0001_init.sql`: tablas `debts`, `incomes` y `payment_marks` con RLS (cada usuario solo ve sus propias filas).
    - `0002_shift_business_days.sql`: columna `shift_biz` para el recorrido a día hábil.
    - `0003_account_balance.sql`: tabla `account_balance` con los ajustes opcionales del saldo proyectado: saldo inicial y mínimo de aviso (con RLS).
+   - `0004_auto_pay.sql`: columna `auto_pay` para los cargos automáticos.
 2. En **Authentication → Providers → Email** deja activo el correo con contraseña. Si no quieres confirmar el correo, desactiva *Confirm email*.
 3. Crea tu cuenta desde **Ajustes** en la app y después, en **Authentication → Sign In / Providers**, desactiva *Allow new users to sign up* para que nadie más pueda registrarse.
 4. Usa solo la clave pública (`sb_publishable_…` o `anon`). **Nunca** pongas la `service_role` en el front.

@@ -170,7 +170,8 @@ export default function Ajustes() {
               <b>Cada 14 días</b>: como los pagos de Kueski por catorcena.<br />
               <b>Mensual</b>: el mismo día de cada mes (si el mes es corto, el último día).<br />
               <b>N pagos</b>: la colegiatura a 4 meses, por ejemplo, es mensual con 4 pagos.<br />
-              <b>Día hábil</b>: si una fecha cae en sábado, domingo o festivo (calendario bancario de México), se recorre al día hábil anterior. Viene activado en lo quincenal y lo puedes cambiar en cada pago.
+              <b>Día hábil</b>: si una fecha cae en sábado, domingo o festivo (calendario bancario de México), se recorre al día hábil anterior. Viene activado en lo quincenal y lo puedes cambiar en cada pago.<br />
+              <b>Cargo automático</b>: un pago que se cobra solo (Netflix, tarjetas domiciliadas) se da por pagado en cuanto pasa su fecha. Si un cargo falla, desmárcalo y esa marca gana.
             </p>
           </div>
         </article>

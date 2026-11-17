@@ -17,7 +17,7 @@ import { CATS, PAY_CATS } from '@/lib/cats';
 interface V {
   name: string; cat: string; type: string; amount: string; freq: string; qdays: string;
   start_date: string; count: string; end_date: string; done: string; notes: string;
-  payout_date: string; payout_amount: string; shift: boolean;
+  payout_date: string; payout_amount: string; shift: boolean; auto: boolean;
 }
 
 function Field({ label, children, full, hint }: { label: string; children: ReactNode; full?: boolean; hint?: string }) {
@@ -56,10 +56,14 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
     payout_amount: it?.payout_amount ? String(it.payout_amount) : '',
     // por defecto: lo quincenal se recorre al día hábil anterior
     shift: it ? shiftOf(it) : kind === 'ingreso',
+    // cargo automático: se da por pagado al pasar la fecha (sugerido para streaming)
+    auto: !!it?.auto_pay,
   }));
   const [err, setErr] = useState('');
   const [shiftTouched, setShiftTouched] = useState(!!it);
+  const [autoTouched, setAutoTouched] = useState(!!it);
   const set = (p: Partial<V>) => setV((s) => ({ ...s, ...p }));
+  const setCat = (cat: string) => set({ cat, ...(autoTouched ? {} : { auto: cat === 'streaming' }) });
   const setFreq = (freq: string) => set({ freq, ...(shiftTouched ? {} : { shift: freq === 'quincenal' }) });
   const unico = v.freq === 'unico';
 
@@ -107,6 +111,7 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
     const item: any = candidate();
     if (kind === 'pago') {
       item.cat = v.cat;
+      item.auto_pay = v.auto;
       item.paid_until = computePaidUntil(item, unico ? '' : v.done);
       const tanda = v.cat === 'tanda' && v.payout_date && parseFloat(v.payout_amount) > 0;
       item.payout_date = tanda ? v.payout_date : null;
@@ -145,7 +150,7 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
 
             {kind === 'pago' ? (
               <Field label="Categoría">
-                <Select value={v.cat} onValueChange={(x) => set({ cat: x })}>
+                <Select value={v.cat} onValueChange={setCat}>
                   <SelectTrigger className={trigger}><SelectValue /></SelectTrigger>
                   <SelectContent>{PAY_CATS.map((c) => <SelectItem key={c} value={c}>{CATS[c].label}</SelectItem>)}</SelectContent>
                 </Select>
@@ -198,6 +203,21 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
                 <span className="text-xs font-normal text-muted-foreground">Ej. la quincena del domingo 15 se {kind === 'pago' ? 'paga' : 'recibe'} el viernes 13.</span>
               </Label>
             </div>
+
+            {kind === 'pago' && (
+              <div className="flex items-start gap-2.5 rounded-xl border bg-cream px-3 py-2.5 sm:col-span-2">
+                <Checkbox
+                  id="auto"
+                  checked={v.auto}
+                  onCheckedChange={(c) => { setAutoTouched(true); set({ auto: c === true }); }}
+                  className="mt-0.5"
+                />
+                <Label htmlFor="auto" className="flex-col items-start gap-0.5 text-[13px] leading-snug font-medium">
+                  Cargo automático: se cobra solo
+                  <span className="text-xs font-normal text-muted-foreground">Se da por pagado en cuanto pasa su fecha. Si un cargo falla, lo desmarcas y esa marca gana.</span>
+                </Label>
+              </div>
+            )}
 
             {!unico && (
               <>

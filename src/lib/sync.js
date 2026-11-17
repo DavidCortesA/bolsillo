@@ -16,10 +16,11 @@ const setState = (p) => {
   subs.forEach((f) => f());
 };
 
-const DEBT_FIELDS = ['id', 'name', 'cat', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'paid_until', 'shift_biz', 'notes', 'payout_date', 'payout_amount', 'created_at', 'updated_at', 'deleted_at'];
+const DEBT_FIELDS = ['id', 'name', 'cat', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'paid_until', 'shift_biz', 'auto_pay', 'notes', 'payout_date', 'payout_amount', 'created_at', 'updated_at', 'deleted_at'];
 const INCOME_FIELDS = ['id', 'name', 'type', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'shift_biz', 'notes', 'created_at', 'updated_at', 'deleted_at'];
 
-const pick = (o, fields) => Object.fromEntries(fields.map((f) => [f, o[f] ?? null]));
+// auto_pay es NOT NULL en la base: los pagos anteriores a esta función (sin el campo) suben como false
+const pick = (o, fields) => Object.fromEntries(fields.map((f) => [f, o[f] ?? (f === 'auto_pay' ? false : null)]));
 const ts = (v) => (v ? Date.parse(v) : 0);
 
 let running = false;
