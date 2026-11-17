@@ -235,7 +235,7 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
             {err && <p role="alert" className="text-[13px] text-destructive sm:col-span-2">{err}</p>}
           </div>
 
-          <DialogFooter className="flex-row items-center border-t bg-cream px-4 py-3 sm:justify-end">
+          <DialogFooter className="mx-0 mb-0 flex-row items-center justify-end rounded-none border-t bg-cream px-4 py-3">
             {it && (
               <Button type="button" variant="destructive" size="lg" className="mr-auto font-mono" onClick={remove}>
                 <Trash2 />Eliminar
