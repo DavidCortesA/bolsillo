@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from 'react';
-import { CircleCheck, TrendingDown, TrendingUp, TriangleAlert, Wallet } from 'lucide-react';
+import { CircleCheck, SlidersHorizontal, TrendingDown, TrendingUp, TriangleAlert, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CardLabel, Delta, EmptyState, KCard, PageBar, Pill } from '@/components/bits';
+import { CardLabel, Delta, KCard, PageBar, Pill } from '@/components/bits';
 import { BalanceChart } from '@/components/balance-chart';
 import { useProjection } from '@/hooks/use-projection';
 import { S, eventsIn, setBalance } from '@/lib/store';
-import { addDays, fmtShort, todayS, ymd } from '@/lib/dates';
+import { addDays, fmtShort, parseD, todayS, ymd } from '@/lib/dates';
 import { money } from '@/lib/fmt';
 import { dipText } from '@/lib/projection';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ const HORIZONS = [
   { v: '90', l: '3 meses' },
   { v: '180', l: '6 meses' },
 ];
+const HORIZON_TEXT: Record<number, string> = { 30: '30 días', 60: '2 meses', 90: '3 meses', 180: '6 meses' };
 const readHorizon = () => {
   try {
     const n = Number(localStorage.getItem('bolsillo.horizon'));
@@ -30,41 +31,35 @@ const readHorizon = () => {
   return 60;
 };
 
-function BalanceForm({ first }: { first: boolean }) {
+/** Ajustes opcionales: la proyección ya funciona sola con lo registrado. */
+function ProjectionSettings() {
   const cfg = S.balance;
-  const [amount, setAmount] = useState(cfg ? String(cfg.amount) : '');
-  const [asOf, setAsOf] = useState(todayS());
+  const [opening, setOpening] = useState(cfg && cfg.amount ? String(cfg.amount) : '');
   const [thr, setThr] = useState(cfg && cfg.threshold ? String(cfg.threshold) : '');
   const [err, setErr] = useState('');
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const a = parseFloat(amount);
-    if (!Number.isFinite(a)) return setErr('Escribe cuánto tienes (puede ser negativo si estás en sobregiro).');
-    if (!asOf) return setErr('Elige la fecha del saldo.');
+    const a = opening === '' ? 0 : parseFloat(opening);
     const t = thr === '' ? 0 : parseFloat(thr);
+    if (!Number.isFinite(a)) return setErr('El saldo inicial debe ser un número (puede ser negativo).');
     if (!(t >= 0)) return setErr('El mínimo de aviso debe ser 0 o más.');
     setErr('');
-    setBalance({ amount: a, as_of: asOf, threshold: t });
-    toast.success('Saldo guardado');
+    setBalance({ amount: a, as_of: todayS(), threshold: t });
+    toast.success('Ajustes guardados');
   };
 
   return (
     <article className="overflow-hidden rounded-xl border">
-      <CardLabel icon={Wallet}>{first ? '¿Cuánto tienes hoy?' : 'Mi saldo'}</CardLabel>
+      <CardLabel icon={SlidersHorizontal}>Ajustes (opcionales)</CardLabel>
       <form onSubmit={submit} className="flex flex-col gap-3 p-3.5">
         <p className="text-[13px] text-ink-2">
-          Escribe lo que tienes disponible hoy (cuentas y efectivo). A partir de ahí la app suma tus ingresos y resta tus pagos día por día.
-          Vuelve a capturarlo cuando quieras afinar la proyección.
+          No necesitas capturar nada: la proyección usa tus ingresos y pagos registrados. Si ya traes dinero al empezar la quincena puedes sumarlo como saldo inicial, y puedes pedir un colchón mínimo para que te avise antes de llegar a cero.
         </p>
-        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="bal-amount" className="font-mono text-xs tracking-wide uppercase">Tengo (MXN)</Label>
-            <Input id="bal-amount" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus={first} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="bal-date" className="font-mono text-xs tracking-wide uppercase">Saldo al día</Label>
-            <Input id="bal-date" type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
+            <Label htmlFor="bal-open" className="font-mono text-xs tracking-wide uppercase">Saldo inicial (MXN)</Label>
+            <Input id="bal-open" type="number" inputMode="decimal" step="0.01" placeholder="0.00" value={opening} onChange={(e) => setOpening(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="bal-thr" className="font-mono text-xs tracking-wide uppercase">Avisar si baja de</Label>
@@ -90,28 +85,18 @@ export default function Saldo() {
     } catch {}
   };
 
-  // Pagos vencidos sin marcar: no están en la proyección (se asume que ya los traes descontados)
-  const yesterday = ymd(addDays(new Date(), -1));
-  const overdue = eventsIn(ymd(addDays(new Date(), -120)), yesterday).filter((e: any) => e.kind === 'pago' && !e.paid);
-  const overdueTotal = overdue.reduce((s: number, e: any) => s + e.amount, 0);
-
-  if (!p) {
-    return (
-      <>
-        <PageBar title="Saldo proyectado" />
-        <div className="flex flex-col gap-3.5 p-3.5 sm:p-5">
-          <BalanceForm first />
-          <article className="rounded-xl border">
-            <EmptyState title="Así funciona" text="Con tu saldo de hoy, la app dibuja cuánto tendrás cada día según tus ingresos y pagos, y te avisa si una quincena te va a dejar en negativo antes de que llegue el siguiente ingreso." />
-          </article>
-        </div>
-      </>
-    );
-  }
-
   const t = p.cfg.threshold;
+  const opening = p.cfg.amount;
+  const today = todayS();
+  const hoy = p.days.find((d) => d.date === today)?.balance ?? p.startBalance;
   const lowest = p.min.balance < t;
-  const diff = p.endBalance - p.startBalance;
+  const diff = p.endBalance - hoy;
+  const hasIncome = p.days.some((d) => d.ing > 0);
+
+  // Pagos vencidos sin marcar de quincenas anteriores: la proyección arranca en esta quincena y no los cuenta
+  const before = ymd(addDays(parseD(p.cfg.as_of), -1));
+  const overdue = eventsIn(ymd(addDays(parseD(p.cfg.as_of), -120)), before).filter((e: any) => e.kind === 'pago' && !e.paid);
+  const overdueTotal = overdue.reduce((s: number, e: any) => s + e.amount, 0);
 
   return (
     <>
@@ -124,11 +109,15 @@ export default function Saldo() {
       </PageBar>
 
       <div className="flex flex-col gap-3.5 p-3.5 sm:p-5">
+        <p className="text-[13px] text-ink-2">
+          Se calcula solo con tus ingresos y pagos registrados: arranca en cero al inicio de esta quincena ({fmtShort(p.cfg.as_of)}) y va sumando lo que entra y restando lo que sale, igual que el Balance del Resumen.
+        </p>
+
         <div className="grid gap-3.5 md:grid-cols-3">
           <KCard
-            label="Saldo base" icon={Wallet} sub={`Capturado el ${fmtShort(p.cfg.as_of)}`}
-            big={money(p.startBalance)}
-            note={t > 0 ? <>Te aviso si baja de <b>{money(t)}</b></> : 'Te aviso si queda en números rojos'}
+            label="Hoy" icon={Wallet} sub={`Acumulado al ${fmtShort(today)}`}
+            big={money(hoy)} neg={hoy < t}
+            note={opening ? <>Incluye tu saldo inicial de <b>{money(opening)}</b></> : 'Ingresos menos pagos desde el inicio de la quincena'}
           />
           <KCard
             label="Punto más bajo" icon={TrendingDown} sub={`El ${fmtShort(p.min.date)}`}
@@ -137,12 +126,17 @@ export default function Saldo() {
           />
           <KCard
             label="Al final" icon={TrendingUp} sub={`Al ${fmtShort(p.end)}`}
-            big={money(p.endBalance)} neg={p.endBalance < t} extra={<Delta cur={p.endBalance} prev={p.startBalance} goodUp />}
-            note={<>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))} en el periodo</>}
+            big={money(p.endBalance)} neg={p.endBalance < t} extra={<Delta cur={p.endBalance} prev={hoy} goodUp />}
+            note={<>{diff >= 0 ? '+' : '−'}{money(Math.abs(diff))} desde hoy</>}
           />
         </div>
 
         {/* Avisos */}
+        {!hasIncome && (
+          <p className="rounded-xl border border-[#f3d9a4] bg-[#fdf6e3] px-3.5 py-2.5 text-[13px] text-[#8a5a00]">
+            No hay <b>ingresos registrados</b> en este periodo, por eso todo sale en rojo. Agrega tu sueldo en <a href="#/ingresos" className="font-medium underline">Ingresos</a> para ver tu saldo real.
+          </p>
+        )}
         {p.dips.length > 0 ? (
           <article className="overflow-hidden rounded-xl border border-destructive/30">
             <div className="flex h-10 items-center gap-2.5 border-b border-destructive/20 bg-bad-soft px-3.5 font-mono text-xs font-medium tracking-wider text-destructive uppercase">
@@ -157,18 +151,21 @@ export default function Saldo() {
                 </li>
               ))}
             </ul>
+            <p className="border-t bg-cream px-3.5 py-2 text-xs text-ink-2">
+              En rojo significa que hasta ese día tus pagos acumulados superan tus ingresos acumulados: tendrías que cubrir la diferencia con ahorros.
+            </p>
           </article>
         ) : (
           <article className="flex items-center gap-3 rounded-xl border border-good/25 bg-good-soft px-3.5 py-3 text-[13px] text-good">
             <CircleCheck className="size-4 shrink-0" />
-            <span><b>Sin números rojos</b> en los próximos {days === 30 ? '30 días' : days === 60 ? '2 meses' : days === 90 ? '3 meses' : '6 meses'}{t > 0 ? ` (ni por debajo de ${money(t)})` : ''}.</span>
+            <span><b>Sin números rojos</b> en {HORIZON_TEXT[days]}{t > 0 ? ` (ni por debajo de ${money(t)})` : ''}: tus ingresos alcanzan a cubrir tus pagos.</span>
           </article>
         )}
 
         {overdue.length > 0 && (
           <p className="rounded-xl border border-[#f3d9a4] bg-[#fdf6e3] px-3.5 py-2.5 text-[13px] text-[#8a5a00]">
-            Tienes <b>{overdue.length}</b> {overdue.length === 1 ? 'pago vencido sin marcar' : 'pagos vencidos sin marcar'} por <b>{money(overdueTotal)}</b>.
-            No entran en la proyección porque se asume que tu saldo ya los trae descontados: márcalos como pagados en Pagos o en el calendario.
+            Tienes <b>{overdue.length}</b> {overdue.length === 1 ? 'pago vencido sin marcar' : 'pagos vencidos sin marcar'} de quincenas anteriores por <b>{money(overdueTotal)}</b>.
+            No entran en la proyección porque empieza en esta quincena: márcalos como pagados en Pagos o en el calendario.
           </p>
         )}
 
@@ -190,7 +187,7 @@ export default function Saldo() {
         <article className="overflow-hidden rounded-xl border">
           <div className="p-3.5">
             <h2 className="text-[15px] font-semibold">Por quincena</h2>
-            <p className="text-[13px] text-ink-2">Con cuánto empiezas, cuánto entra y sale, y cuál es tu saldo más bajo en cada una.</p>
+            <p className="text-[13px] text-ink-2">Con cuánto empiezas, cuánto entra y sale, y cuál es tu saldo más bajo en cada una. El cambio de cada quincena es su Balance en el Resumen.</p>
           </div>
           <Table>
             <TableHeader className="bg-cream">
@@ -226,7 +223,7 @@ export default function Saldo() {
           </Table>
         </article>
 
-        <BalanceForm first={false} />
+        <ProjectionSettings />
       </div>
     </>
   );

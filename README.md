@@ -6,7 +6,7 @@ Finanzas personales para llevar al día tus pagos y tus ingresos: Kueski quincen
 
 - **Resumen** por quincena, mes o año, con gráfica de ingresos contra pagos, desglose por categoría y próximos pagos.
 - **Calendario** mensual con los días de pago e ingreso marcados; toca un día para ver el detalle y marcar pagos.
-- **Saldo proyectado**: capturas cuánto tienes hoy y la app dibuja tu saldo día por día (1 a 6 meses) sumando ingresos y restando pagos, con un resumen por quincena. Te avisa si algún tramo queda en rojo (o por debajo del mínimo que elijas) antes de que llegue el siguiente ingreso: aviso en el Resumen y punto rojo en el menú. Ver abajo cómo se calcula.
+- **Saldo proyectado**: se calcula solo con tus ingresos y pagos registrados, sin capturar nada. Dibuja tu saldo día por día (1 a 6 meses), con un resumen por quincena, y te avisa si algún tramo queda en rojo (o por debajo del mínimo que elijas) antes de que llegue el siguiente ingreso: aviso en el Resumen y punto rojo en el menú. Ver abajo cómo se calcula.
 - **Pagos**: tabla de deudas con progreso (por ejemplo `2/4`), lo que falta por pagar y la próxima fecha. Al agregar una nueva se acomoda sola en la tabla, el calendario y la gráfica.
 - **Ingresos**: fijos (quincenal o mensual) y variables (extras o por cierto tiempo).
 - **Frecuencias**: quincenal (15 y fin de mes, 1 y 16, 5 y 20, 10 y 25), cada 14 días, mensual, anual o una sola vez; con número de pagos (colegiatura a 4 meses) o fecha de fin.
@@ -25,13 +25,15 @@ Los días inhábiles siguen el calendario bancario de México y se calculan por 
 
 ## Cómo se calcula el saldo proyectado
 
-El saldo que capturas es la verdad de partida; todo lo anterior a esa fecha ya está reflejado en él.
+No hay que capturar un saldo: usa la misma información que el Resumen.
 
-- **El día de la captura** solo cuentan los pagos que aún no marcas como pagados; los ingresos de ese día ya entraron.
-- **Después de esa fecha** cuenta todo: ingresos esperados y pagos programados (con el recorrido a día hábil aplicado).
-- **Pagos vencidos sin marcar** no entran, porque se asume que tu saldo ya los trae descontados. La página te avisa cuántos son para que los marques.
-- **Aviso**: un tramo son los días seguidos con saldo por debajo de tu mínimo (por defecto, cero). Cada aviso dice cuándo empieza, cuál es el punto más bajo y con qué ingreso se recupera, o que no se recupera dentro del periodo.
-- Es una proyección con lo que tienes registrado: no ve gastos del día a día (súper, gasolina…). Si los acostumbras, captura un mínimo de aviso con colchón.
+- **Arranque**: en cero al inicio de la quincena actual. Desde ahí suma cada ingreso y resta cada pago, día por día, con el recorrido a día hábil aplicado.
+- **Cuadra con el Resumen**: el cambio de cada quincena en la tabla es exactamente su *Balance* del Resumen, y el saldo se acumula de una quincena a la siguiente.
+- **Rojo** significa que hasta ese día tus pagos acumulados superan tus ingresos acumulados, o sea que habría que cubrir la diferencia con ahorros.
+- **Aviso**: un tramo son los días seguidos por debajo de tu mínimo (por defecto, cero). Cada aviso dice cuándo empieza, cuál es el punto más bajo y con qué ingreso se recupera, o que no se recupera dentro del periodo.
+- **Ajustes opcionales**: un *saldo inicial* que se suma al arrancar la quincena (si ya traes dinero) y un *mínimo de aviso* para tener colchón.
+- **Pagos vencidos sin marcar** de quincenas anteriores no entran, porque la proyección empieza en la quincena actual. La página te avisa cuántos son para que los marques.
+- Solo ve lo que tienes registrado: no incluye gastos del día a día (súper, gasolina…). Si los acostumbras, sube el mínimo de aviso.
 
 La lógica está en [`src/lib/projection.ts`](src/lib/projection.ts).
 
@@ -54,7 +56,7 @@ Otros comandos: `npm run typecheck`, `npm run build`, `npm run preview`, `npm ru
 1. En **SQL Editor** ejecuta, en orden, los archivos de [`supabase/migrations/`](supabase/migrations):
    - `0001_init.sql`: tablas `debts`, `incomes` y `payment_marks` con RLS (cada usuario solo ve sus propias filas).
    - `0002_shift_business_days.sql`: columna `shift_biz` para el recorrido a día hábil.
-   - `0003_account_balance.sql`: tabla `account_balance` con el saldo capturado para el saldo proyectado (con RLS).
+   - `0003_account_balance.sql`: tabla `account_balance` con los ajustes opcionales del saldo proyectado: saldo inicial y mínimo de aviso (con RLS).
 2. En **Authentication → Providers → Email** deja activo el correo con contraseña. Si no quieres confirmar el correo, desactiva *Confirm email*.
 3. Crea tu cuenta desde **Ajustes** en la app y después, en **Authentication → Sign In / Providers**, desactiva *Allow new users to sign up* para que nadie más pueda registrarse.
 4. Usa solo la clave pública (`sb_publishable_…` o `anon`). **Nunca** pongas la `service_role` en el front.

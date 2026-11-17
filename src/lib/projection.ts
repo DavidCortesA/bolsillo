@@ -11,9 +11,15 @@ export interface ProjEvent {
 }
 
 export interface BalanceCfg {
-  amount: number; // cuánto había en la fecha as_of
+  amount: number; // saldo de partida en la fecha as_of
   as_of: string; // YYYY-MM-DD
   threshold: number; // avisar si baja de este monto (0 = solo números rojos)
+  /**
+   * Modo automático: la proyección arranca en `as_of` y cuenta TODO lo registrado desde ese día
+   * (pagado o no, recibido o no), igual que el Balance del Resumen. Sin esto, `as_of` es el día
+   * en que se capturó un saldo real y lo de ese día ya está reflejado en él.
+   */
+  auto?: boolean;
 }
 
 export interface Mov { kind: 'pago' | 'ingreso'; name: string; amount: number }
@@ -57,10 +63,12 @@ export interface Projection {
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 /**
- * Reglas sobre lo que ya está en el saldo capturado:
- *  - Lo anterior a `as_of` ya está reflejado: se ignora.
- *  - El día `as_of`: solo cuentan los pagos aún sin marcar; los ingresos de ese día ya entraron.
- *  - Después de `as_of`: cuenta todo (aunque lo marques pagado antes de tiempo, el saldo capturado no lo tenía descontado).
+ * Reglas:
+ *  - Lo anterior a `as_of` se ignora.
+ *  - Modo automático (`auto`): desde `as_of` cuenta todo, pagado o no.
+ *  - Modo con saldo real: el día `as_of` solo cuentan los pagos aún sin marcar (los ingresos de ese
+ *    día ya entraron); después cuenta todo, aunque lo marques pagado antes de tiempo, porque el saldo
+ *    capturado no lo tenía descontado.
  */
 export function project(events: ProjEvent[], cfg: BalanceCfg, endIn: string): Projection {
   const end = endIn < cfg.as_of ? cfg.as_of : endIn;
@@ -69,7 +77,7 @@ export function project(events: ProjEvent[], cfg: BalanceCfg, endIn: string): Pr
   const byDate = new Map<string, ProjEvent[]>();
   for (const e of events) {
     if (e.date < cfg.as_of || e.date > end) continue;
-    if (e.date === cfg.as_of && (e.kind === 'ingreso' || e.paid)) continue;
+    if (!cfg.auto && e.date === cfg.as_of && (e.kind === 'ingreso' || e.paid)) continue;
     const list = byDate.get(e.date);
     if (list) list.push(e);
     else byDate.set(e.date, [e]);

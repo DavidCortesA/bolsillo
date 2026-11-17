@@ -81,7 +81,10 @@ export function setMark(key, paid) {
   commit();
 }
 
-/** Saldo capturado: cuánto había en `as_of`; `threshold` = avisar si baja de ese monto. */
+/**
+ * Ajustes opcionales de la proyección: `amount` = saldo inicial que se suma al arrancar la quincena,
+ * `threshold` = avisar si baja de ese monto. (`as_of` es la fecha en que se guardó.)
+ */
 export function setBalance({ amount, as_of, threshold }) {
   S.balance = { amount: +amount, as_of, threshold: +threshold || 0, updated_at: nowIso() };
   commit();
@@ -191,8 +194,6 @@ export function loadSample() {
   S = {
     ...empty(),
     sample: true,
-    // saldo de ejemplo bajo a propósito para que se vea cómo avisa un tramo en rojo
-    balance: { amount: 1000, as_of: ymd(now), threshold: 0, updated_at: stamp },
     debts: [
       mkItem({ name: 'Kueski · Celular', cat: 'kueski', amount: 850, freq: 'quincenal', start_date: d(m, 1), count: 6 }),
       mkItem({ name: 'Kueski · Ropa', cat: 'kueski', amount: 380, freq: 'quincenal', start_date: d(m, 1), count: 4 }),
