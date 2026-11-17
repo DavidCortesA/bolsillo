@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { Suspense, lazy, useState, type FormEvent } from 'react';
 import { CircleCheck, SlidersHorizontal, TrendingDown, TrendingUp, TriangleAlert, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CardLabel, Delta, KCard, PageBar, Pill } from '@/components/bits';
-import { BalanceChart } from '@/components/balance-chart';
+import { CardLabel, ChartSkeleton, Delta, KCard, PageBar, Pill } from '@/components/bits';
 import { useProjection } from '@/hooks/use-projection';
 import { S, eventsIn, setBalance } from '@/lib/store';
 import { addDays, fmtShort, parseD, todayS, ymd } from '@/lib/dates';
 import { money } from '@/lib/fmt';
 import { dipText } from '@/lib/projection';
 import { cn } from '@/lib/utils';
+
+// Recharts es lo más pesado: se descarga aparte, solo cuando se dibuja la gráfica
+const BalanceChart = lazy(() => import('@/components/balance-chart').then((m) => ({ default: m.BalanceChart })));
 
 const th = 'font-mono text-[11px] tracking-wider uppercase';
 const HORIZONS = [
@@ -133,7 +135,7 @@ export default function Saldo() {
 
         {/* Avisos */}
         {!hasIncome && (
-          <p className="rounded-xl border border-[#f3d9a4] bg-[#fdf6e3] px-3.5 py-2.5 text-[13px] text-[#8a5a00]">
+          <p className="rounded-xl border border-warn-border bg-warn-bg px-3.5 py-2.5 text-[13px] text-warn-fg">
             No hay <b>ingresos registrados</b> en este periodo, por eso todo sale en rojo. Agrega tu sueldo en <a href="#/ingresos" className="font-medium underline">Ingresos</a> para ver tu saldo real.
           </p>
         )}
@@ -163,7 +165,7 @@ export default function Saldo() {
         )}
 
         {overdue.length > 0 && (
-          <p className="rounded-xl border border-[#f3d9a4] bg-[#fdf6e3] px-3.5 py-2.5 text-[13px] text-[#8a5a00]">
+          <p className="rounded-xl border border-warn-border bg-warn-bg px-3.5 py-2.5 text-[13px] text-warn-fg">
             Tienes <b>{overdue.length}</b> {overdue.length === 1 ? 'pago vencido sin marcar' : 'pagos vencidos sin marcar'} de quincenas anteriores por <b>{money(overdueTotal)}</b>.
             No entran en la proyección porque empieza en esta quincena: márcalos como pagados en Pagos o en el calendario.
           </p>
@@ -181,7 +183,11 @@ export default function Saldo() {
           >
             Saldo día a día
           </CardLabel>
-          <div className="p-3.5"><BalanceChart p={p} /></div>
+          <div className="p-3.5">
+            <Suspense fallback={<ChartSkeleton h={280} />}>
+              <BalanceChart p={p} />
+            </Suspense>
+          </div>
         </article>
 
         <article className="overflow-hidden rounded-xl border">

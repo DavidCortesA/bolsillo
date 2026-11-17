@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CatBadge, EmptyState, GapBar, KCard, PageBar, Pill } from '@/components/bits';
 import { useApp } from '@/app-context';
-import { debtStats, debts, deleteItem, eventsIn, setMark } from '@/lib/store';
+import { debtStats, debts, eventsIn, setMark } from '@/lib/store';
+import { removeWithUndo } from '@/lib/undo';
 import { freqText } from '@/lib/schedule';
 import { diffDays, dim, fmtShort, mk, relDay, todayS, ymd } from '@/lib/dates';
 import { money } from '@/lib/fmt';
-import { CATS, PAY_CATS } from '@/lib/cats';
+import { CATS, PAY_CATS, catPalette } from '@/lib/cats';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -107,7 +108,7 @@ export default function Pagos() {
                 </TableRow>
               )}
               {rows.map(({ p, st }: any) => {
-                const c = CATS[p.cat] || CATS.otro;
+                const c = catPalette(p.cat);
                 const late = st.next && diffDays(todayS(), st.next.date) < 0;
                 return (
                   <TableRow key={p.id} className={cn('cursor-pointer', !st.next && 'text-muted-foreground')} onClick={() => openForm('pago', { id: p.id })}>
@@ -152,7 +153,7 @@ export default function Pagos() {
                         </Button>
                       )}
                       <Button variant="ghost" size="icon-sm" aria-label="Editar" onClick={(e) => { e.stopPropagation(); openForm('pago', { id: p.id }); }}><Pencil /></Button>
-                      <Button variant="ghost" size="icon-sm" aria-label="Eliminar" className="hover:bg-destructive/10 hover:text-destructive" onClick={(e) => { e.stopPropagation(); if (confirm(`¿Eliminar “${p.name}”?`)) { deleteItem('debts', p.id); toast('Eliminado'); } }}><Trash2 /></Button>
+                      <Button variant="ghost" size="icon-sm" aria-label="Eliminar" className="hover:bg-destructive/10 hover:text-destructive" onClick={(e) => { e.stopPropagation(); removeWithUndo('debts', p); }}><Trash2 /></Button>
                     </TableCell>
                   </TableRow>
                 );

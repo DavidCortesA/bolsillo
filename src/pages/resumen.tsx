@@ -1,14 +1,18 @@
+import { Suspense, lazy } from 'react';
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChartColumn, ChevronLeft, ChevronRight, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CardLabel, CatBadge, DayBadge, Delta, EmptyState, GapBar, KCard, PageBar, PayCheck, Pill, ReceivedMark, ShiftNote } from '@/components/bits';
-import { FlowChart, type Bucket } from '@/components/flow-chart';
+import { CardLabel, CatBadge, ChartSkeleton, DayBadge, Delta, EmptyState, GapBar, KCard, PageBar, PayCheck, Pill, ReceivedMark, ShiftNote } from '@/components/bits';
+
+// Recharts es lo más pesado: se descarga aparte, solo cuando se dibuja la gráfica
+const FlowChart = lazy(() => import('@/components/flow-chart').then((m) => ({ default: m.FlowChart })));
+import type { Bucket } from '@/components/flow-chart';
 import { useApp, type Mode } from '@/app-context';
 import { eventsIn } from '@/lib/store';
 import { MESES, MESES_C, addDays, cap, diffDays, fmtShort, parseD, periodInfo, relDay, shiftAnchor, todayS, ymd } from '@/lib/dates';
 import { money } from '@/lib/fmt';
-import { CATS } from '@/lib/cats';
+import { CATS, catPalette } from '@/lib/cats';
 import { cn } from '@/lib/utils';
 
 function totals(evs: any[]) {
@@ -178,7 +182,9 @@ export default function Resumen() {
               Flujo · {label}
             </CardLabel>
             <div className="p-3.5">
-              <FlowChart buckets={buildBuckets(mode, from, to, evs)} />
+              <Suspense fallback={<ChartSkeleton />}>
+                <FlowChart buckets={buildBuckets(mode, from, to, evs)} />
+              </Suspense>
             </div>
           </article>
 
@@ -189,7 +195,6 @@ export default function Resumen() {
           {cats.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {cats.map(([k, c]) => {
-                const cat = CATS[k] || CATS.otro;
                 return (
                   <div key={k} className="flex flex-col">
                     <CatBadge cat={k} className="h-6 self-start rounded-b-none rounded-t-lg px-2.5" />
@@ -198,7 +203,7 @@ export default function Resumen() {
                       <div className="mt-0.5 mb-2.5 text-2xl font-semibold tracking-tight">{money(c.total)}</div>
                       <div className="mb-2.5 border-t border-dashed" />
                       <div className="mb-2 flex justify-between text-[13px]"><b>{money(c.paid)}</b><span className="text-muted-foreground">de {money(c.total)}</span></div>
-                      <GapBar pct={c.total ? (c.paid / c.total) * 100 : 0} color={cat.c} />
+                      <GapBar pct={c.total ? (c.paid / c.total) * 100 : 0} color={catPalette(k).c} />
                     </div>
                   </div>
                 );

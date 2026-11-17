@@ -95,7 +95,7 @@ export function AppShell({ children, banner }: { children: ReactNode; banner?: R
               aria-current={route === n.id ? 'page' : undefined}
               className={cn(
                 'flex h-[38px] items-center gap-3 rounded-[9px] px-3 font-mono text-sm text-ink-2 hover:bg-cream-2',
-                route === n.id && 'bg-cream-2 font-semibold text-foreground ring-1 ring-black/5',
+                route === n.id && 'bg-cream-2 font-semibold text-foreground ring-1 ring-foreground/10',
               )}
             >
               <n.icon className="size-[18px]" />

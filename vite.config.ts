@@ -10,7 +10,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      // Service worker propio (src/sw.ts): además de cachear la app, recibe las notificaciones push
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
+      injectRegister: false, // lo registra main.tsx con registerSW
       includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'Bolsillo — Finanzas personales',
@@ -28,7 +33,7 @@ export default defineConfig({
           { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
       },
     }),

@@ -76,6 +76,16 @@ export function deleteItem(table, id) {
   it.deleted_at = it.updated_at = nowIso();
   commit();
 }
+/** Deshace un borrado: quita la marca de borrado y renueva updated_at para que gane al sincronizar. */
+export function restoreItem(table, id) {
+  const it = S[table].find((x) => x.id === id);
+  if (!it || !it.deleted_at) return false;
+  it.deleted_at = null;
+  it.updated_at = nowIso();
+  commit();
+  return true;
+}
+
 export function setMark(key, paid) {
   S.marks[key] = { paid, t: nowIso() };
   commit();

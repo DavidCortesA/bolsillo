@@ -3,15 +3,16 @@ import { CalendarClock, Check, ChevronRight, type LucideIcon } from 'lucide-reac
 import { shiftNote } from '@/lib/holidays';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { CATS } from '@/lib/cats';
+import { CATS, catPalette } from '@/lib/cats';
 import { setMark } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 export function CatBadge({ cat, className }: { cat: string; className?: string }) {
   const c = CATS[cat] || CATS.otro;
+  const pal = catPalette(cat);
   const Icon = c.icon;
   return (
-    <Badge variant="secondary" className={cn('rounded-md font-mono text-[11px] font-medium uppercase tracking-wide', className)} style={{ color: c.c, backgroundColor: c.bg }}>
+    <Badge variant="secondary" className={cn('rounded-md font-mono text-[11px] font-medium uppercase tracking-wide', className)} style={{ color: pal.c, backgroundColor: pal.bg }}>
       <Icon />
       {c.label}
     </Badge>
@@ -22,7 +23,7 @@ export function Pill({ tone, children }: { tone: 'ok' | 'bad' | 'warn' | 'plain'
   const tones = {
     ok: 'bg-good-soft text-good',
     bad: 'bg-bad-soft text-destructive',
-    warn: 'bg-[#fdf1d8] text-[#b45309]',
+    warn: 'bg-warn-bg text-warn-fg',
     plain: 'bg-cream-2 text-ink-2',
   };
   return (
@@ -76,7 +77,7 @@ export function GapBar({ pct, color = 'var(--brand)', className }: { pct: number
   return (
     <div className={cn('flex h-3.5 gap-1', className)} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p)}>
       <span className="block rounded-full transition-[width]" style={{ width: `${p}%`, background: color }} />
-      <span className="block flex-1 rounded-full bg-[#e7e6e1]" />
+      <span className="block flex-1 rounded-full bg-track" />
     </div>
   );
 }
@@ -148,6 +149,25 @@ export function EmptyState({ title, text }: { title: string; text: string }) {
     <div className="px-4 py-9 text-center text-sm text-ink-2">
       <b className="mb-1 block text-[15px] text-foreground">{title}</b>
       {text}
+    </div>
+  );
+}
+
+/** Marcador mientras se descarga una gráfica. */
+export function ChartSkeleton({ h = 260 }: { h?: number }) {
+  return <div className="animate-pulse rounded-lg bg-cream" style={{ height: h }} aria-busy="true" aria-label="Cargando gráfica" />;
+}
+
+/** Marcador mientras se descarga una página. */
+export function PageSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="Cargando">
+      <div className="h-[58px] border-b" />
+      <div className="flex animate-pulse flex-col gap-3.5 p-3.5 sm:p-5">
+        <div className="h-28 rounded-xl bg-cream" />
+        <div className="h-28 rounded-xl bg-cream" />
+        <div className="h-48 rounded-xl bg-cream" />
+      </div>
     </div>
   );
 }

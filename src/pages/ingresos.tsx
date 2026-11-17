@@ -1,10 +1,10 @@
 import { ArrowDownLeft, CalendarDays, Pencil, Plus, Trash2, Wallet } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { EmptyState, KCard, PageBar, Pill } from '@/components/bits';
 import { useApp } from '@/app-context';
-import { deleteItem, eventsIn, incomes, nextIncome } from '@/lib/store';
+import { eventsIn, incomes, nextIncome } from '@/lib/store';
+import { removeWithUndo } from '@/lib/undo';
 import { MONTHLY_FACTOR, freqText } from '@/lib/schedule';
 import { dim, fmtShort, mk, relDay, todayS, ymd } from '@/lib/dates';
 import { money } from '@/lib/fmt';
@@ -85,7 +85,7 @@ export default function Ingresos() {
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
                       <Button variant="ghost" size="icon-sm" aria-label="Editar" onClick={(e) => { e.stopPropagation(); openForm('ingreso', { id: i.id }); }}><Pencil /></Button>
-                      <Button variant="ghost" size="icon-sm" aria-label="Eliminar" className="hover:bg-destructive/10 hover:text-destructive" onClick={(e) => { e.stopPropagation(); if (confirm(`¿Eliminar “${i.name}”?`)) { deleteItem('incomes', i.id); toast('Eliminado'); } }}><Trash2 /></Button>
+                      <Button variant="ghost" size="icon-sm" aria-label="Eliminar" className="hover:bg-destructive/10 hover:text-destructive" onClick={(e) => { e.stopPropagation(); removeWithUndo('incomes', i); }}><Trash2 /></Button>
                     </TableCell>
                   </TableRow>
                 );

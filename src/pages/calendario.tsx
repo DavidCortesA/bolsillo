@@ -5,7 +5,7 @@ import { useApp } from '@/app-context';
 import { eventsIn } from '@/lib/store';
 import { DIAS_C, MESES, cap, dim, fmtLong, mk, todayS, ymd } from '@/lib/dates';
 import { money, money0 } from '@/lib/fmt';
-import { CATS } from '@/lib/cats';
+import { CATS, catPalette } from '@/lib/cats';
 import { cn } from '@/lib/utils';
 
 export default function Calendario() {
@@ -54,7 +54,7 @@ export default function Calendario() {
               {Array.from({ length: cells }, (_, i) => {
                 const day = i - offset + 1;
                 const col = i % 7;
-                if (day < 1 || day > last) return <div key={i} aria-hidden className={cn('min-h-14 border-b bg-[#fbfaf7] sm:min-h-[104px]', col < 6 && 'border-r')} />;
+                if (day < 1 || day > last) return <div key={i} aria-hidden className={cn('min-h-14 border-b bg-out sm:min-h-[104px]', col < 6 && 'border-r')} />;
                 const date = ymd(mk(y, m, day));
                 const list = by[date] || [];
                 const isQ = day === 15 || day === last;
@@ -64,7 +64,7 @@ export default function Calendario() {
                     onClick={() => setCalSel(date)}
                     aria-label={`${day} de ${MESES[m]}${list.length ? `, ${list.length} movimientos` : ''}`}
                     className={cn(
-                      'relative flex min-h-14 flex-col items-center gap-1 overflow-hidden border-b bg-card p-1 text-left outline-none hover:bg-[#faf9f5] focus-visible:ring-2 focus-visible:ring-ring sm:min-h-[104px] sm:items-stretch sm:gap-[3px] sm:p-1.5',
+                      'relative flex min-h-14 flex-col items-center gap-1 overflow-hidden border-b bg-card p-1 text-left outline-none hover:bg-soft focus-visible:ring-2 focus-visible:ring-ring sm:min-h-[104px] sm:items-stretch sm:gap-[3px] sm:p-1.5',
                       col < 6 && 'border-r',
                       date === sel && 'z-[1] ring-2 ring-inset ring-foreground',
                     )}
@@ -81,7 +81,7 @@ export default function Calendario() {
                     <span className="hidden flex-col gap-[3px] sm:flex">
                       {list.slice(0, 3).map((e: any) => {
                         const inc = e.kind === 'ingreso';
-                        const c = CATS[e.cat] || CATS.otro;
+                        const c = catPalette(e.cat);
                         return (
                           <span
                             key={e.key}

@@ -16,7 +16,7 @@ function Tip({ active, payload, threshold }: any) {
       <b className="mb-1.5 block font-mono font-semibold">{fmtFull(d.date)}</b>
       <div className="flex justify-between gap-4">
         <span>Saldo</span>
-        <span className={low ? 'font-semibold text-[#ff8a80]' : 'font-semibold'}>{money(d.balance)}</span>
+        <span className={low ? 'font-semibold text-[#ff8a80] dark:text-[#c62828]' : 'font-semibold'}>{money(d.balance)}</span>
       </div>
       {d.movs.length > 0 && (
         <div className="mt-1.5 space-y-0.5 border-t border-background/20 pt-1.5 text-background/75">
@@ -73,7 +73,7 @@ export function BalanceChart({ p }: { p: Projection }) {
         {t > 0 && <ReferenceLine y={t} stroke="var(--brand)" strokeDasharray="4 4" label={{ value: `mínimo ${moneyK(t)}`, position: 'insideTopRight', fontSize: 10, fill: 'var(--brand)' }} />}
         {showToday && <ReferenceLine x={today} stroke="var(--brand)" strokeDasharray="3 3" />}
         <Area dataKey="balance" type="stepAfter" baseValue={0} stroke={flat ? flatColor : `url(#${uid}s)`} strokeWidth={2} fill={`url(#${uid}f)`} isAnimationActive={false} />
-        <ReferenceDot x={p.min.date} y={p.min.balance} r={5} fill={p.min.balance < t ? 'var(--destructive)' : 'var(--chart-1)'} stroke="#fff" strokeWidth={2} ifOverflow="visible" />
+        <ReferenceDot x={p.min.date} y={p.min.balance} r={5} fill={p.min.balance < t ? 'var(--destructive)' : 'var(--chart-1)'} stroke="var(--background)" strokeWidth={2} ifOverflow="visible" />
       </AreaChart>
     </ChartContainer>
   );

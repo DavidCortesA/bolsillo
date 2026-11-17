@@ -1,16 +1,22 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { Cloud, Download, LogOut, SlidersHorizontal, Smartphone, Trash2, Upload } from 'lucide-react';
+import { Cloud, Download, LogOut, Monitor, Moon, Palette, SlidersHorizontal, Smartphone, Sun, Trash2, Upload } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useTheme } from '@/hooks/use-theme';
+import { setPref, type ThemePref } from '@/lib/theme';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardLabel, PageBar } from '@/components/bits';
 import { CalendarReminders } from '@/components/calendar-reminders';
+import { CsvExport } from '@/components/csv-export';
+import { LockSettings } from '@/components/lock-settings';
+import { PushSettings } from '@/components/push-settings';
 import { useApp } from '@/app-context';
 import { useSync } from '@/hooks/use-store';
 import { S, deleteItem, loadSample, resetAll } from '@/lib/store';
 import { signIn, signOut, signUp, sync } from '@/lib/sync';
-import { supabase } from '@/lib/supabase';
+import { hasSupabase } from '@/lib/supabase';
 import { exportBackup, importBackup } from '@/lib/backup';
 
 function Cuenta() {
@@ -20,7 +26,7 @@ function Cuenta() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
-  if (!supabase) {
+  if (!hasSupabase) {
     return (
       <p>
         La sincronización no está configurada (faltan <code className="font-mono text-xs">VITE_SUPABASE_URL</code> y{' '}
@@ -90,6 +96,23 @@ function Cuenta() {
   );
 }
 
+function Apariencia() {
+  const { pref } = useTheme();
+  return (
+    <article className="overflow-hidden rounded-xl border">
+      <CardLabel icon={Palette}>Apariencia</CardLabel>
+      <div className="flex flex-col gap-3 p-3.5 text-[13px] text-ink-2">
+        <p>Elige claro u oscuro, o deja que siga al modo de tu teléfono o computadora.</p>
+        <ToggleGroup type="single" variant="outline" value={pref} onValueChange={(v) => v && setPref(v as ThemePref)} aria-label="Tema">
+          <ToggleGroupItem value="light" className="gap-1.5 font-mono text-xs"><Sun />Claro</ToggleGroupItem>
+          <ToggleGroupItem value="dark" className="gap-1.5 font-mono text-xs"><Moon />Oscuro</ToggleGroupItem>
+          <ToggleGroupItem value="system" className="gap-1.5 font-mono text-xs"><Monitor />Automático</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+    </article>
+  );
+}
+
 export default function Ajustes() {
   const { install, doInstall } = useApp();
   const file = useRef<HTMLInputElement>(null);
@@ -147,6 +170,14 @@ export default function Ajustes() {
             </div>
           </div>
         </article>
+
+        <Apariencia />
+
+        <LockSettings />
+
+        <CsvExport />
+
+        <PushSettings />
 
         <CalendarReminders />
 

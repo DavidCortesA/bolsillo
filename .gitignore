@@ -7,3 +7,6 @@ dev-dist
 *.log
 .DS_Store
 .claude/settings.local.json
+
+# Archivos con tus valores reales (secretos): nunca al repo
+supabase/*.local.sql

@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/app-context';
-import { S, computePaidUntil, deleteItem, saveItem } from '@/lib/store';
+import { S, computePaidUntil, saveItem } from '@/lib/store';
+import { removeWithUndo } from '@/lib/undo';
 import { FREQ, QLABEL, genDates, isFinite_, shiftOf } from '@/lib/schedule';
 import { Checkbox } from '@/components/ui/checkbox';
 import { addDays, fmtShort, todayS, ymd } from '@/lib/dates';
@@ -125,9 +126,8 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
   };
 
   const remove = () => {
-    if (!it || !confirm(`¿Eliminar “${it.name}”?`)) return;
-    deleteItem(table, it.id);
-    toast('Eliminado');
+    if (!it) return;
+    removeWithUndo(table, it);
     onClose();
   };
 

@@ -6,6 +6,20 @@
     <title>Bolsillo — Finanzas personales</title>
     <meta name="description" content="Pagos quincenales y mensuales, ingresos y calendario de pagos." />
     <meta name="theme-color" content="#f6f4ee" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Aplica el tema antes del primer pintado para que no parpadee en claro
+      (function () {
+        try {
+          var p = localStorage.getItem('bolsillo.theme') || 'system';
+          var dark = p === 'dark' || (p === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
