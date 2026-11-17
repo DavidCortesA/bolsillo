@@ -1,4 +1,4 @@
-import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -9,7 +9,7 @@ const base = process.env.GITHUB_ACTIONS ? '/bolsillo/' : '/';
 
 export default defineConfig({
   base,
-  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
     react(),
     tailwindcss(),
