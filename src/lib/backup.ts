@@ -9,6 +9,7 @@ export function exportBackup() {
     debts: S.debts,
     incomes: S.incomes,
     marks: S.marks,
+    balance: S.balance,
   };
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a');
@@ -27,6 +28,9 @@ export async function importBackup(file: File) {
     debts: data.debts.filter(valid),
     incomes: data.incomes.filter(valid),
     marks: data.marks && typeof data.marks === 'object' ? data.marks : {},
+    balance: data.balance && Number.isFinite(+data.balance.amount) && data.balance.as_of
+      ? { amount: +data.balance.amount, as_of: data.balance.as_of, threshold: +data.balance.threshold || 0, updated_at: data.balance.updated_at || new Date().toISOString() }
+      : null,
     sample: false,
   });
 }

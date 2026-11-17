@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { mk } from '@/lib/dates';
 
-export type Route = 'resumen' | 'calendario' | 'pagos' | 'ingresos' | 'ajustes';
+export type Route = 'resumen' | 'calendario' | 'saldo' | 'pagos' | 'ingresos' | 'ajustes';
 export type Mode = 'quincena' | 'mes' | 'anio';
 export interface FormReq {
   kind: 'pago' | 'ingreso';
@@ -10,7 +10,7 @@ export interface FormReq {
   n: number; // fuerza un formulario nuevo cada vez
 }
 
-const ROUTES: Route[] = ['resumen', 'calendario', 'pagos', 'ingresos', 'ajustes'];
+const ROUTES: Route[] = ['resumen', 'calendario', 'saldo', 'pagos', 'ingresos', 'ajustes'];
 const readRoute = (): Route => {
   const r = location.hash.replace(/^#\/?/, '') as Route;
   return ROUTES.includes(r) ? r : 'resumen';

@@ -7,9 +7,11 @@ export const money0 = (n) => MXN0.format(n || 0);
 /** Eje de la gráfica: 1.5k, 12k, 1.2M */
 export function moneyK(v) {
   const t = (x) => String(+x.toFixed(2));
-  if (v >= 1e6) return t(v / 1e6) + 'M';
-  if (v >= 1e3) return t(v / 1e3) + 'k';
-  return String(Math.round(v));
+  const s = v < 0 ? '-' : '';
+  const a = Math.abs(v);
+  if (a >= 1e6) return s + t(a / 1e6) + 'M';
+  if (a >= 1e3) return s + t(a / 1e3) + 'k';
+  return s + String(Math.round(a));
 }
 
 export const esc = (s) =>

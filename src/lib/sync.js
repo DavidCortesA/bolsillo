@@ -55,6 +55,24 @@ async function syncList(table, fields, local, userId) {
   local.splice(0, local.length, ...merged.values());
 }
 
+/** Una sola fila por usuario; gana la más reciente. Si la tabla aún no existe, no rompe el resto. */
+async function syncBalance(userId) {
+  const { data, error } = await supabase.from('account_balance').select('amount,as_of,threshold,updated_at').maybeSingle();
+  if (error) {
+    console.warn('Saldo sin sincronizar (¿falta correr la migración 0003?)', error.message);
+    return;
+  }
+  const l = S.balance;
+  if (data && (!l || ts(data.updated_at) > ts(l.updated_at))) {
+    S.balance = { amount: +data.amount, as_of: data.as_of, threshold: +data.threshold || 0, updated_at: data.updated_at };
+  } else if (l && (!data || ts(l.updated_at) > ts(data.updated_at))) {
+    const { error: e2 } = await supabase
+      .from('account_balance')
+      .upsert({ user_id: userId, amount: l.amount, as_of: l.as_of, threshold: l.threshold || 0, updated_at: l.updated_at }, { onConflict: 'user_id' });
+    if (e2) console.warn('No se pudo subir el saldo', e2.message);
+  }
+}
+
 async function syncMarks(userId) {
   const { data: remote, error } = await supabase.from('payment_marks').select('key,paid,updated_at');
   if (error) throw error;
@@ -95,12 +113,14 @@ export async function sync() {
       S.debts = [];
       S.incomes = [];
       S.marks = {};
+      S.balance = null;
       S.sample = false;
     }
     const uid = session.user.id;
     await syncList('debts', DEBT_FIELDS, S.debts, uid);
     await syncList('incomes', INCOME_FIELDS, S.incomes, uid);
     await syncMarks(uid);
+    await syncBalance(uid);
     S.meta.lastSync = new Date().toISOString();
     setState({ status: 'ok', last: S.meta.lastSync });
     commit({ sync: false });

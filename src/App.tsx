@@ -8,6 +8,8 @@ import { S, resetAll } from '@/lib/store';
 import { toast } from 'sonner';
 import Resumen from '@/pages/resumen';
 import Calendario from '@/pages/calendario';
+import Saldo from '@/pages/saldo';
+import { BalanceAlert } from '@/components/balance-alert';
 import Pagos from '@/pages/pagos';
 import Ingresos from '@/pages/ingresos';
 import Ajustes from '@/pages/ajustes';
@@ -24,10 +26,21 @@ function SampleBanner() {
   );
 }
 
+function Banners() {
+  const { route } = useApp();
+  return (
+    <>
+      <SampleBanner />
+      {route === 'resumen' && <BalanceAlert />}
+    </>
+  );
+}
+
 function Routes() {
   const { route } = useApp();
   switch (route) {
     case 'calendario': return <Calendario />;
+    case 'saldo': return <Saldo />;
     case 'pagos': return <Pagos />;
     case 'ingresos': return <Ingresos />;
     case 'ajustes': return <Ajustes />;
@@ -39,7 +52,7 @@ export default function App() {
   useStore(); // re-renderiza toda la app cuando cambian los datos
   return (
     <AppProvider>
-      <AppShell banner={<SampleBanner />}>
+      <AppShell banner={<Banners />}>
         <Routes />
       </AppShell>
       <ItemForm />

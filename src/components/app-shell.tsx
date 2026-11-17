@@ -1,14 +1,16 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ArrowDownLeft, CalendarDays, Cloud, CloudOff, Download, HandCoins, LayoutDashboard, Plus, ReceiptText, Search, SlidersHorizontal, type LucideIcon } from 'lucide-react';
+import { ArrowDownLeft, CalendarDays, Cloud, CloudOff, Download, HandCoins, LayoutDashboard, Plus, ReceiptText, Search, SlidersHorizontal, TrendingUp, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApp, type Route } from '@/app-context';
 import { useSync } from '@/hooks/use-store';
+import { useProjection } from '@/hooks/use-projection';
 import { exportBackup } from '@/lib/backup';
 import { cn } from '@/lib/utils';
 
 const NAV: { id: Route; label: string; icon: LucideIcon }[] = [
   { id: 'resumen', label: 'Resumen', icon: LayoutDashboard },
   { id: 'calendario', label: 'Calendario', icon: CalendarDays },
+  { id: 'saldo', label: 'Saldo', icon: TrendingUp },
   { id: 'pagos', label: 'Pagos', icon: ReceiptText },
   { id: 'ingresos', label: 'Ingresos', icon: HandCoins },
   { id: 'ajustes', label: 'Ajustes', icon: SlidersHorizontal },
@@ -39,6 +41,8 @@ function SyncStatus() {
 export function AppShell({ children, banner }: { children: ReactNode; banner?: ReactNode }) {
   const { route, go, q, setQ, openForm } = useApp();
   const searchRef = useRef<HTMLInputElement>(null);
+  const proj = useProjection(60);
+  const saldoAlert = !!proj && proj.dips.length > 0; // punto rojo en el menú
 
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
@@ -96,6 +100,7 @@ export function AppShell({ children, banner }: { children: ReactNode; banner?: R
             >
               <n.icon className="size-[18px]" />
               {n.label}
+              {n.id === 'saldo' && saldoAlert && <span className="ml-auto size-2 rounded-full bg-destructive" role="img" aria-label="Hay avisos de saldo" />}
             </a>
           ))}
         </nav>
@@ -134,10 +139,13 @@ export function AppShell({ children, banner }: { children: ReactNode; banner?: R
       </main>
 
       {/* Barra inferior (móvil) */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t bg-cream/95 px-1 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] backdrop-blur lg:hidden" aria-label="Principal">
+      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t bg-cream/95 px-1 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] backdrop-blur lg:hidden" aria-label="Principal">
         {NAV.map((n) => (
           <a key={n.id} href={`#/${n.id}`} aria-current={route === n.id ? 'page' : undefined} className={cn('flex flex-col items-center gap-0.5 rounded-lg py-1.5 font-mono text-[10px] text-muted-foreground', route === n.id && 'font-semibold text-primary')}>
-            <n.icon className="size-5" />
+            <span className="relative">
+              <n.icon className="size-5" />
+              {n.id === 'saldo' && saldoAlert && <span className="absolute -top-0.5 -right-1 size-2 rounded-full bg-destructive ring-2 ring-cream" role="img" aria-label="Hay avisos de saldo" />}
+            </span>
             {n.label}
           </a>
         ))}
