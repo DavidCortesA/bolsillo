@@ -4,11 +4,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// En GitHub Pages la app vive en /bolsillo/; en local, en la raíz.
-const base = process.env.GITHUB_ACTIONS ? '/bolsillo/' : '/';
-
 export default defineConfig({
-  base,
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
     react(),
@@ -21,8 +17,8 @@ export default defineConfig({
         short_name: 'Bolsillo',
         description: 'Pagos quincenales y mensuales, ingresos y calendario de pagos.',
         lang: 'es-MX',
-        start_url: base,
-        scope: base,
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
         background_color: '#f6f4ee',
         theme_color: '#f6f4ee',

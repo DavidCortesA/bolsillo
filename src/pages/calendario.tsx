@@ -1,6 +1,6 @@
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CardLabel, EmptyState, PageBar, PayCheck, ReceivedMark } from '@/components/bits';
+import { CardLabel, EmptyState, PageBar, PayCheck, ReceivedMark, ShiftNote } from '@/components/bits';
 import { useApp } from '@/app-context';
 import { eventsIn } from '@/lib/store';
 import { DIAS_C, MESES, cap, dim, fmtLong, mk, todayS, ymd } from '@/lib/dates';
@@ -134,6 +134,7 @@ export default function Calendario() {
                       <div className="min-w-0 flex-1">
                         <div className="font-medium">{e.name}{e.total ? <small className="ml-1.5 text-muted-foreground">{e.n}/{e.total}</small> : null}</div>
                         <div className="text-xs text-muted-foreground">{inc ? (e.received ? 'Ingreso recibido' : 'Ingreso esperado') : (CATS[e.cat] || CATS.otro).label}</div>
+                        <ShiftNote ev={e} />
                       </div>
                       <div className={cn('font-semibold tabular-nums', inc && 'text-good')}>{inc ? '+' : ''}{money(e.amount)}</div>
                       {inc ? <ReceivedMark on={!!e.received} /> : <PayCheck ev={e} />}

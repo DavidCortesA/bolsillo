@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Check, ChevronRight, type LucideIcon } from 'lucide-react';
+import { CalendarClock, Check, ChevronRight, type LucideIcon } from 'lucide-react';
+import { shiftNote } from '@/lib/holidays';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { CATS } from '@/lib/cats';
@@ -41,6 +42,18 @@ export function PayCheck({ ev }: { ev: any }) {
       className="size-5 rounded-md border-[1.5px] data-[state=checked]:border-good data-[state=checked]:bg-good data-[state=checked]:text-white"
       onClick={(e) => e.stopPropagation()}
     />
+  );
+}
+
+/** "Cae en domingo 15 nov → se recorre al vie 13 nov", solo si se recorrió. */
+export function ShiftNote({ ev, className }: { ev: any; className?: string }) {
+  const n = shiftNote(ev.nominal, ev.date);
+  if (!n) return null;
+  return (
+    <div className={cn('flex items-center gap-1 text-xs text-muted-foreground', className)}>
+      <CalendarClock className="size-3 shrink-0" />
+      {n}
+    </div>
   );
 }
 

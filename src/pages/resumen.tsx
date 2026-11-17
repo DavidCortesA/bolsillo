@@ -2,7 +2,7 @@ import { ArrowDownLeft, ArrowUpRight, CalendarDays, ChartColumn, ChevronLeft, Ch
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CardLabel, CatBadge, DayBadge, Delta, EmptyState, GapBar, KCard, PageBar, PayCheck, Pill, ReceivedMark } from '@/components/bits';
+import { CardLabel, CatBadge, DayBadge, Delta, EmptyState, GapBar, KCard, PageBar, PayCheck, Pill, ReceivedMark, ShiftNote } from '@/components/bits';
 import { FlowChart, type Bucket } from '@/components/flow-chart';
 import { useApp, type Mode } from '@/app-context';
 import { eventsIn } from '@/lib/store';
@@ -89,6 +89,7 @@ function Upcoming() {
                     {c.label}
                     {e.total ? ` · ${e.n}/${e.total}` : ''} · {relDay(e.date)}
                   </div>
+                  <ShiftNote ev={e} />
                 </div>
                 <div className="font-semibold tabular-nums">{money(e.amount)}</div>
                 <PayCheck ev={e} />
@@ -242,6 +243,7 @@ export default function Resumen() {
                         <TableCell>
                           <span className={cn('font-medium', !inc && e.paid && 'line-through decoration-muted-foreground/40')}>{e.name}</span>
                           {e.total ? <small className="ml-1.5 text-muted-foreground">{e.n}/{e.total}</small> : null}
+                          <ShiftNote ev={e} className="font-normal" />
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {inc && !e.payout ? <Pill tone="ok">{e.type === 'variable' ? 'Variable' : 'Fijo'}</Pill> : <CatBadge cat={e.cat} />}

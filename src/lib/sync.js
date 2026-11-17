@@ -16,8 +16,8 @@ const setState = (p) => {
   subs.forEach((f) => f());
 };
 
-const DEBT_FIELDS = ['id', 'name', 'cat', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'paid_until', 'notes', 'payout_date', 'payout_amount', 'created_at', 'updated_at', 'deleted_at'];
-const INCOME_FIELDS = ['id', 'name', 'type', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'notes', 'created_at', 'updated_at', 'deleted_at'];
+const DEBT_FIELDS = ['id', 'name', 'cat', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'paid_until', 'shift_biz', 'notes', 'payout_date', 'payout_amount', 'created_at', 'updated_at', 'deleted_at'];
+const INCOME_FIELDS = ['id', 'name', 'type', 'amount', 'freq', 'qdays', 'start_date', 'count', 'end_date', 'shift_biz', 'notes', 'created_at', 'updated_at', 'deleted_at'];
 
 const pick = (o, fields) => Object.fromEntries(fields.map((f) => [f, o[f] ?? null]));
 const ts = (v) => (v ? Date.parse(v) : 0);

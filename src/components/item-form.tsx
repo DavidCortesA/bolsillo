@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/app-context';
 import { S, computePaidUntil, deleteItem, saveItem } from '@/lib/store';
-import { FREQ, QLABEL, genDates, isFinite_ } from '@/lib/schedule';
+import { FREQ, QLABEL, genDates, isFinite_, shiftOf } from '@/lib/schedule';
+import { Checkbox } from '@/components/ui/checkbox';
 import { addDays, fmtShort, todayS, ymd } from '@/lib/dates';
 import { money, uid } from '@/lib/fmt';
 import { CATS, PAY_CATS } from '@/lib/cats';
@@ -16,7 +17,7 @@ import { CATS, PAY_CATS } from '@/lib/cats';
 interface V {
   name: string; cat: string; type: string; amount: string; freq: string; qdays: string;
   start_date: string; count: string; end_date: string; done: string; notes: string;
-  payout_date: string; payout_amount: string;
+  payout_date: string; payout_amount: string; shift: boolean;
 }
 
 function Field({ label, children, full, hint }: { label: string; children: ReactNode; full?: boolean; hint?: string }) {
@@ -53,9 +54,13 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
     notes: it?.notes ?? '',
     payout_date: it?.payout_date ?? '',
     payout_amount: it?.payout_amount ? String(it.payout_amount) : '',
+    // por defecto: lo quincenal se recorre al día hábil anterior
+    shift: it ? shiftOf(it) : kind === 'ingreso',
   }));
   const [err, setErr] = useState('');
+  const [shiftTouched, setShiftTouched] = useState(!!it);
   const set = (p: Partial<V>) => setV((s) => ({ ...s, ...p }));
+  const setFreq = (freq: string) => set({ freq, ...(shiftTouched ? {} : { shift: freq === 'quincenal' }) });
   const unico = v.freq === 'unico';
 
   const candidate = () => ({
@@ -68,6 +73,7 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
     start_date: v.start_date,
     count: !unico && v.count ? Math.max(1, parseInt(v.count, 10)) : null,
     end_date: !unico && v.end_date ? v.end_date : null,
+    shift_biz: v.shift,
     notes: v.notes.trim(),
   });
 
@@ -161,7 +167,7 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
             </Field>
 
             <Field label="Frecuencia">
-              <Select value={v.freq} onValueChange={(x) => set({ freq: x })}>
+              <Select value={v.freq} onValueChange={setFreq}>
                 <SelectTrigger className={trigger}><SelectValue /></SelectTrigger>
                 <SelectContent>{Object.entries(FREQ).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent>
               </Select>
@@ -179,6 +185,19 @@ function FormBody({ kind, id, startDate, onClose }: { kind: 'pago' | 'ingreso'; 
             <Field label={unico ? 'Fecha' : kind === 'pago' ? 'Fecha del primer pago' : 'Fecha del primer ingreso'}>
               <Input className={input} type="date" value={v.start_date} onChange={(e) => set({ start_date: e.target.value })} />
             </Field>
+
+            <div className="flex items-start gap-2.5 rounded-xl border bg-cream px-3 py-2.5 sm:col-span-2">
+              <Checkbox
+                id="shift"
+                checked={v.shift}
+                onCheckedChange={(c) => { setShiftTouched(true); set({ shift: c === true }); }}
+                className="mt-0.5"
+              />
+              <Label htmlFor="shift" className="flex-col items-start gap-0.5 text-[13px] leading-snug font-medium">
+                Si cae en sábado, domingo o festivo, recorrer al día hábil anterior
+                <span className="text-xs font-normal text-muted-foreground">Ej. la quincena del domingo 15 se {kind === 'pago' ? 'paga' : 'recibe'} el viernes 13.</span>
+              </Label>
+            </div>
 
             {!unico && (
               <>

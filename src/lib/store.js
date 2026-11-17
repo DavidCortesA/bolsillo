@@ -1,5 +1,5 @@
 // Estado de la app. Local primero (localStorage) y sincronizado con Supabase en segundo plano.
-import { genDates, isFinite_ } from './schedule.js';
+import { genDates, genOccurrences, isFinite_ } from './schedule.js';
 import { ymd, addDays, todayS, mk } from './dates.js';
 import { uid } from './fmt.js';
 
@@ -101,7 +101,7 @@ export function computePaidUntil(it, doneN) {
 
 // ---- Eventos (cada ocurrencia de un pago o ingreso) -------------------------
 function mkEvents(it, kind, to) {
-  return genDates(it, to).map((date, i) => ({
+  return genOccurrences(it, to).map(({ date, nominal }, i) => ({
     key: `${it.id}|${date}`,
     kind,
     itemId: it.id,
@@ -110,6 +110,7 @@ function mkEvents(it, kind, to) {
     type: it.type,
     amount: +it.amount,
     date,
+    nominal, // fecha teórica; distinta de `date` si se recorrió por fin de semana o festivo
     n: i + 1,
     total: it.count > 0 ? it.count : null,
   }));
