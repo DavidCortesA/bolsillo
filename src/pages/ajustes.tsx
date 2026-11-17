@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CardLabel, PageBar } from '@/components/bits';
+import { CalendarReminders } from '@/components/calendar-reminders';
 import { useApp } from '@/app-context';
 import { useSync } from '@/hooks/use-store';
 import { S, deleteItem, loadSample, resetAll } from '@/lib/store';
@@ -146,6 +147,8 @@ export default function Ajustes() {
             </div>
           </div>
         </article>
+
+        <CalendarReminders />
 
         <article className={card}>
           <CardLabel icon={Smartphone}>Instalar en el celular</CardLabel>

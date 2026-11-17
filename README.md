@@ -10,6 +10,7 @@ Finanzas personales para llevar al día tus pagos y tus ingresos: Kueski quincen
 - **Ingresos**: fijos (quincenal o mensual) y variables (extras o por cierto tiempo).
 - **Frecuencias**: quincenal (15 y fin de mes, 1 y 16, 5 y 20, 10 y 25), cada 14 días, mensual, anual o una sola vez; con número de pagos (colegiatura a 4 meses) o fecha de fin.
 - **Días hábiles**: si una fecha cae en sábado, domingo o festivo, se recorre al día hábil anterior (ver abajo).
+- **Recordatorios en tu calendario**: en Ajustes descargas un `.ics` con tus próximos pagos (y opcionalmente ingresos) como eventos con aviso el mismo día, 1 o 3 días antes y a la hora que elijas. Se abre en Apple Calendar o Google Calendar; es una foto de hoy, así que se vuelve a descargar cuando cambies algo.
 - **Tandas**: pagas cada quincena y registras tu turno de cobro como ingreso.
 - **Local primero**: todo se guarda en el dispositivo; si inicias sesión, se sincroniza con tu cuenta.
 
